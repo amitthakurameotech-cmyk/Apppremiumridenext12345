@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.grey,
-    
+
   },
   brandSection: {
     alignItems: "center",
@@ -137,7 +137,7 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-   signupText: {
+  signupText: {
     marginTop: 15,
     fontSize: 14,
     color: "#555",
@@ -147,7 +147,7 @@ export const styles = StyleSheet.create({
     color: "#4c6ef5",
     fontWeight: "600",
   },
-    inputContainer: {
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
@@ -159,6 +159,31 @@ export const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 8,
+  },
+  heading: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1E40AF', // nice blue color
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#1E40AF', // same blue as heading
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5, // for Android shadow
+  },
+
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
 
 });

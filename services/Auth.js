@@ -10,9 +10,16 @@ export const Auth = {
         const res = await API.post("/register", data);
         return res.data;
     },
-     getProfile: async () => {
+     getProfile: async (id) => {
     const res = await API.get(`/getuser/${id}`);
+    //console.log(res.data)
     return res.data;
   },
+   updateProfile: async (form) => {
+    const res = await API.put("/updateregister",form);
+    console.log(res.data)
+    return res.data;
+  },
+
 }
 

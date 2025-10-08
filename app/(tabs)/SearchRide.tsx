@@ -6,8 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-
+  TextInput,    
   TouchableOpacity,
   View
 } from "react-native";
@@ -93,8 +92,8 @@ export default function SearchRides() {
   const handleNavigate = (ride: string) => {
     if (!ride) return;
     router.push({
-      pathname: "/booking/[ride]",
-      params: { ride: ride },
+      pathname: "/booking/id",
+       params: { id: ride },
     });
   };
 
@@ -243,5 +242,4 @@ const styles = StyleSheet.create({
   bookText: { color: "#fff", fontWeight: "600" },
   noRide: { textAlign: "center", color: "#6b7280", marginTop: 20 },
 });
-
 

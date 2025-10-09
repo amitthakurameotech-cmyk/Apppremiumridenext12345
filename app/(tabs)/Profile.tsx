@@ -11,7 +11,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from "react-native";
 
 export default function Profile() {
@@ -21,6 +21,7 @@ export default function Profile() {
   const [form, setForm] = useState<any>({});
   const router = useRouter();
 
+  // Fetch user profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -31,9 +32,12 @@ export default function Profile() {
           return;
         }
         const res = await Auth.getProfile(id);
-        setUser(res.data);
-        setForm(res.data); // set form values same as profile
+        //console.log("Profile response:", res); // ✅ debug
+        const profileData = res?.data ?? res;
+        setUser(profileData);
+        setForm(profileData);
       } catch (err: any) {
+        console.error("Profile error:", err);
         Alert.alert("Error", err.response?.data?.message || "Failed to load profile");
       } finally {
         setLoading(false);
@@ -41,30 +45,43 @@ export default function Profile() {
     };
 
     fetchProfile();
-  }, [Auth.getProfile]);
- 
+  }, []);
 
+  // Logout
   const handleLogout = async () => {
     await AsyncStorage.clear();
     router.replace("/auth/login");
   };
 
+  
+  // Save profile
   const handleSave = async () => {
     try {
       const id = await AsyncStorage.getItem("userid");
-      if (!id) return;
-      const updated = await Auth.updateProfile( form);
-      console.log(updated)
-      setUser(updated); // update local profile
-    
+      if (!id) {
+        Alert.alert("Error", "User ID not found. Please login again.");
+        return;
+      }
+
+      // Ensure id is sent with form
+      const payload = { id, ...form };
+
+      const res = await Auth.updateProfile(payload);
+      console.log("Update response:", res); // ✅ debug
+
+      //const newData = res?.data ?? payload; // use updated data if returned
+      setUser(res);
+      setUser(res);
+
       setEditing(false);
-       console.log(user)
       Alert.alert("Success", "Profile updated successfully!");
     } catch (err: any) {
+      console.error("Update error:", err);
       Alert.alert("Error", err.response?.data?.message || "Update failed");
     }
   };
 
+  // Loading
   if (loading) {
     return (
       <View style={styles.container}>
@@ -74,6 +91,7 @@ export default function Profile() {
     );
   }
 
+  // No user
   if (!user) {
     return (
       <View style={styles.container}>
@@ -82,41 +100,54 @@ export default function Profile() {
     );
   }
 
+  // Fields
+  const fields = [
+    { label: "Full Name", key: "fullName" },
+    { label: "Email", key: "email" },
+    { label: "Phone Number", key: "phoneNumber" },
+    { label: "Date of Birth", key: "dateOfBirth", type: "date" },
+    { label: "City", key: "city" },
+    { label: "Account Type", key: "accountType" },
+    { label: "Bio", key: "bio" },
+    { label: "Car Model", key: "carModel" },
+    { label: "License Plate", key: "licensePlate" },
+    { label: "Driving License Number", key: "drivingLicenseNumber" },
+  ];
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#f9f9f9" }}>
       <View style={styles.container}>
         <Text style={profileStyles.title}>My Profile</Text>
 
         <View style={profileStyles.card}>
-          {[
-            { label: "Full Name", key: "fullName" },
-            { label: "Email", key: "email" },
-            { label: "Phone Number", key: "phoneNumber" },
-            { label: "Date of Birth", key: "dateOfBirth" },
-            { label: "City", key: "city" },
-            { label: "Account Type", key: "accountType" },
-            { label: "Bio", key: "bio" },
-            { label: "Car Model", key: "carModel" },
-            { label: "License Plate", key: "licensePlate" },
-            { label: "Driving License Number", key: "drivingLicenseNumber" },
-          ].map((field) => (
-            <View key={field.key} style={{ marginBottom: 12 }}>
-              <Text style={profileStyles.label}>{field.label}</Text>
-              {editing ? (
-                <TextInput
-                  style={profileStyles.input}
-                  value={form[field.key] ? String(form[field.key]) : ""}
-                  onChangeText={(text) =>
-                    setForm({ ...form, [field.key]: text })
-                  }
-                />
-              ) : (
-                <Text style={profileStyles.value}>
-                  {form[field.key] || "Not Provided"}
-                </Text>
-              )}
-            </View>
-          ))}
+          {fields.map((field) => {
+            let value = form[field.key] || "";
+            if (field.type === "date" && value) {
+              try {
+                value = new Date(value).toISOString().split("T")[0]; // format YYYY-MM-DD
+              } catch {
+                value = form[field.key];
+              }
+            }
+
+            return (
+              <View key={field.key} style={{ marginBottom: 12 }}>
+                <Text style={profileStyles.label}>{field.label}</Text>
+                {editing ? (
+                  <TextInput
+                    style={profileStyles.input}
+                    value={value}
+                    placeholder={field.type === "date" ? "YYYY-MM-DD" : field.label}
+                    onChangeText={(text) => setForm({ ...form, [field.key]: text })}
+                  />
+                ) : (
+                  <Text style={profileStyles.value}>
+                    {value || "No Data Available"}
+                  </Text>
+                )}
+              </View>
+            );
+          })}
         </View>
 
         {editing ? (
@@ -170,4 +201,3 @@ const profileStyles = StyleSheet.create({
     backgroundColor: "#fdfdfd",
   },
 });
-

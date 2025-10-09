@@ -28,6 +28,9 @@ interface IBooking {
   departureDate: string;
   userid: IUser;
   totalAmount: number;
+  // optional fields returned by backend
+  status?: string;
+  bookingStatus?: string;
 }
 
 type TabType = "bookings" | "rides" | "requests";
@@ -81,45 +84,40 @@ export default function MyBooking(): JSX.Element {
     fetchData();
   }, []);
 
-  // helper that actually performs the network call
-  const performApprove = async (bookingId: string) => {
-    console.log("performApprove called for", bookingId);
+
+  const handleRequestAction = async (
+    bookingId: string,
+    action: "approve" | "reject"
+  ) => {
     try {
       setProcessingMap((p) => ({ ...p, [bookingId]: true }));
-      const res = await mybooking.approverequest(bookingId);
-      console.log("approverequest returned:", res);
-      if (res) {
-        // If backend returns success or updated resource, re-fetch lists to reflect DB state
-        if (res?.success === false && res?.message) {
-          Alert.alert("Error", res.message.toString());
-        } else {
-          await fetchData();
-          Alert.alert("Success", res?.message ?? "Request approved.");
-        }
-      } else {
-        Alert.alert("Error", "Failed to approve request.");
+
+      // Map frontend action -> backend bookingStatus
+      const bookingStatus = action === "approve" ? "Booked" : "Cancelled";
+
+      // Call API (patch)
+      const res = await mybooking.approverequest(bookingId, bookingStatus);
+
+      if (!res || !res.booking) {
+        Alert.alert("Error", "No response from server");
+        return;
       }
-    } catch (err) {
-      console.error("performApprove error", err);
-      Alert.alert("Error", "An unexpected error occurred.");
+
+      Alert.alert("Success", res.message);
+
+      // Remove from UI
+      setData((prev) => ({
+        ...prev,
+        requests: prev.requests.filter((r) => r._id !== bookingId),
+      }));
+    } catch (err: any) {
+      console.error("handleRequestAction error", err);
+      Alert.alert("Error", err?.message || "Failed to update request");
     } finally {
       setProcessingMap((p) => ({ ...p, [bookingId]: false }));
     }
   };
 
-  const handleApprove = (bookingId: string) => {
-    console.log("handleApprove clicked", bookingId);
-    Alert.alert("Confirm", "Approve this request?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Approve",
-        onPress: () => {
-          // call the async worker but don't await here (Alert callbacks shouldn't return promises)
-          performApprove(bookingId);
-        },
-      },
-    ]);
-  };
 
   const tabs: { key: TabType; label: string; color: string }[] = [
     { key: "bookings", label: "As Passenger", color: "#60a5fa" },
@@ -167,8 +165,8 @@ export default function MyBooking(): JSX.Element {
           {activeTab === "bookings"
             ? "bookings"
             : activeTab === "rides"
-            ? "rides"
-            : "requests"}{" "}
+              ? "rides"
+              : "requests"}{" "}
           found.
         </Text>
       ) : (
@@ -205,11 +203,40 @@ export default function MyBooking(): JSX.Element {
                     styles.approveBtn,
                     processingMap[item._id] && { opacity: 0.7 },
                   ]}
-                  onPress={() => handleApprove(item._id)}
+                  onPress={() =>
+                    Alert.alert("Confirm", "Approve this request?", [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Approve",
+                        onPress: () => handleRequestAction(item._id, "approve"),
+                      },
+                    ])
+                  }
                   disabled={!!processingMap[item._id]}
                 >
                   <Text style={styles.actionText}>
                     {processingMap[item._id] ? "Processing..." : "Approve"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.rejectBtn,
+                    processingMap[item._id] && { opacity: 0.7 },
+                  ]}
+                  onPress={() =>
+                    Alert.alert("Confirm", "Reject this request?", [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Reject",
+                        onPress: () => handleRequestAction(item._id, "reject"),
+                      },
+                    ])
+                  }
+                  disabled={!!processingMap[item._id]}
+                >
+                  <Text style={styles.actionText}>
+                    {processingMap[item._id] ? "Processing..." : "Reject"}
                   </Text>
                 </TouchableOpacity>
               </View>

@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,7 +24,7 @@ const router = useRouter();
        alert("✅ Login successful!");
       router.replace("/(tabs)");
     } catch (err: any) {
-      Alert.alert("Login Failed", err.response?.data?.message || "Invalid credentials");
+      alert( "Invalid Email or Password");
     }
   };
 

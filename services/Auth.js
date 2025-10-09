@@ -3,7 +3,7 @@ import API from "./Api";
 export const Auth = {
     login: async (email, password) => {
         const res = await API.post("/login", { email, password });
-        //console.log(res.data)
+        console.log(res.data)
         return res.data;
     },
     register: async (data) => {
@@ -17,8 +17,8 @@ export const Auth = {
   },
    updateProfile: async (form) => {
     const res = await API.put("/updateregister",form);
-    console.log(res.data)
-    return res.data;
+    //console.log(res.data);
+    return res;
   },
 
 }
